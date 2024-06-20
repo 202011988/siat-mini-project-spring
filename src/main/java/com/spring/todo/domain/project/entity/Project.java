@@ -5,6 +5,7 @@ import com.spring.todo.global.utill.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -12,6 +13,7 @@ import lombok.ToString;
 @Table(name = "Projects")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
 @ToString // TODO: 없애기
 public class Project extends BaseEntity {
@@ -20,7 +22,7 @@ public class Project extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private User user;
 
@@ -29,4 +31,12 @@ public class Project extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }
