@@ -1,0 +1,37 @@
+# <타입>: <제목>
+#
+# 제목 (필수)
+#  - 50자를 넘지 않도록 요약하고, 마침표를 찍지 않습니다.
+#  - 명령문을 사용합니다. 예: "Add feature", "Fix bug", "Update documentation"
+#
+# 본문 (선택)
+#  - 제목과 본문 사이에 빈 줄을 추가합니다.
+#  - 한 줄의 길이는 72자를 넘지 않도록 합니다.
+#  - 변경 이유와 동기를 설명합니다.
+#  - 무엇이 변경되었는지, 왜 변경되었는지, 어떻게 해결했는지 설명합니다.
+#
+# 꼬리말 (선택)
+#  - 이슈 트래커 ID를 참조합니다. 예: "Resolves: #123", "See also: #456"
+#  - 본문과 꼬리말 사이에 빈 줄을 추가합니다.
+
+# 예시:
+# feat: Add user login feature
+#
+# Added a new feature to allow users to log in using their email and password.
+# This includes changes to the authentication backend and updates to the
+# frontend login form.
+#
+# Resolves: #123
+
+# 타입 목록:
+# feat: 새로운 기능 추가
+# fix: 버그 수정
+# docs: 문서 수정
+# style: 코드 포맷팅, 세미콜론 누락 등 (비논리적 변경)
+# refactor: 코드 리펙토링 (기능 변경 없음)
+# test: 테스트 추가 및 수정
+# chore: 빌드 작업 업데이트, 패키지 매니저 설정 등
+# perf: 성능 향상
+# ci: CI 설정 파일 및 스크립트 수정
+# build: 빌드 시스템 또는 외부 종속성 수정
+# revert: 이전 커밋 되돌리기
