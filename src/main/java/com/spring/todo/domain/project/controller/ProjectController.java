@@ -24,14 +24,14 @@ public class ProjectController {
 	private final ProjectService projectService;
 	
 	// select user에 관한 모든 프로젝트 출력
-	@GetMapping("/projects")
+	@GetMapping("/api/projects")
     public ResponseEntity<List<ProjectDTO>> getProjectsByUserId() {
         List<ProjectDTO> projects = projectService.getAllProjectsByUserId(1L);
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 
 	// Create
-	@PostMapping("/projects")
+	@PostMapping("/api/projects")
 	public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO) {	
 		// userId는 아직 세션처리를 안했기 때문에 일단 테스트용으로 둠.. 
 		ProjectDTO project = projectService.createProject(projectDTO, 1L);
@@ -39,7 +39,7 @@ public class ProjectController {
 	}
 	
 	// Delete
-    @DeleteMapping("/projects/{id}")
+    @DeleteMapping("/api/projects/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
         try {
             projectService.deleteProject(id);
@@ -50,7 +50,7 @@ public class ProjectController {
     }
     
     // Update
-    @PutMapping("/projects/{id}")
+    @PutMapping("/api/projects/{id}")
     public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
         try {
             ProjectDTO updatedProject = projectService.updateProject(id, projectDTO);
