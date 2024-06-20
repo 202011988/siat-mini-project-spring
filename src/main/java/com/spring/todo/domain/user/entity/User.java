@@ -1,29 +1,29 @@
 package com.spring.todo.domain.user.entity;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "Users")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString // TODO: 개발 완료 후 제거하기
+@Builder
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer projectId;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
-    private User user;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-    @Column(nullable = false, length = 100)
-    private String name;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false, length = 50)
+    private String password;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private String nickname;
 
     // Getters and Setters
 }
