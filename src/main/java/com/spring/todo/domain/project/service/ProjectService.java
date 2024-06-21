@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +23,8 @@ import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
 import com.spring.todo.domain.user.entity.User;
 import com.spring.todo.domain.user.repository.UserRepository;
+import com.spring.todo.global.dto.PageRequestDTO;
+import com.spring.todo.global.dto.PageResponseDTO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -87,17 +93,18 @@ public class ProjectService {
     }
     
     @Transactional(readOnly = true)
-    public ProjectDTO getProjectDetails(Long projectId) {
+    public PageResponseDTO<TaskDTO, Task> getProjectDetails(Long projectId, PageRequestDTO pageRequestDTO) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
 
-        ProjectDTO projectDTO = entityToDetailedDTO(project);
-        List<TaskDTO> taskDTOs = project.getTasks().stream()
-                .map(this::entityToTaskDTO)
-                .collect(Collectors.toList());
-        projectDTO.setTasks(taskDTOs);
+        Pageable pageable = PageRequest.of(pageRequestDTO.getPage(), pageRequestDTO.getSize());
+        List<Task> tasks = project.getTasks();
+        Page<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
 
-        return projectDTO;
+        PageResponseDTO<TaskDTO, Task> responseDTO = new PageResponseDTO<>(taskPage, this::entityToTaskDTO);
+        responseDTO.setProject(entityToDetailedDTO(project));
+
+        return responseDTO;
     }
     
     private Project dtoToEntity(ProjectDTO projectDTO, User user) {

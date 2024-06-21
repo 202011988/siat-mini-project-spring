@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.spring.todo.domain.project.dto.ProjectDTO;
 import com.spring.todo.domain.project.dto.SimpleProjectDTO;
 import com.spring.todo.domain.project.service.ProjectService;
+import com.spring.todo.domain.task.dto.TaskDTO;
+import com.spring.todo.domain.task.entity.Task;
+import com.spring.todo.global.dto.PageRequestDTO;
+import com.spring.todo.global.dto.PageResponseDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,10 +35,10 @@ public class ProjectController {
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 	
-	// 특정 프로젝트의 상세 정보와 연관된 Task 가져오기 (프로젝트 이름 클릭시 매핑)
-    @GetMapping("/api/projects/{projectId}")
-    public ResponseEntity<ProjectDTO> getProjectDetails(@PathVariable Long projectId) {
-        ProjectDTO projectDetails = projectService.getProjectDetails(projectId);
+	// 특정 프로젝트의 상세 정보와 연관된 Task 가져오기 (프로젝트 이름 클릭시 매핑 및 Task 페이징 처리)
+	@GetMapping("/api/projects/{projectId}")
+    public ResponseEntity<PageResponseDTO<TaskDTO, Task>> getProjectDetails(@PathVariable Long projectId, PageRequestDTO pageRequestDTO) {
+        PageResponseDTO<TaskDTO, Task> projectDetails = projectService.getProjectDetails(projectId, pageRequestDTO);
         return new ResponseEntity<>(projectDetails, HttpStatus.OK);
     }
 
