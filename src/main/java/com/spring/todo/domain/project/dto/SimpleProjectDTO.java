@@ -1,9 +1,5 @@
 package com.spring.todo.domain.project.dto;
 
-import java.util.List;
-
-import com.spring.todo.domain.task.dto.TaskDTO;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,11 +13,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class ProjectDTO {
+public class SimpleProjectDTO {
     private Long id;
     private String name;
-    private String description;
-    private String createdAt;
-    private String updatedAt;
-    private List<TaskDTO> tasks;
 }

@@ -30,6 +30,46 @@ public class TaskService {
         Task savedTask = taskRepository.save(task);
         return entityToDTO(savedTask);
     }
+    
+    @Transactional(readOnly = true)
+    public TaskDTO getTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("해당 태스크가 존재하지 않습니다."));
+        
+        return entityToDTO(task);
+    }
+    
+    @Transactional
+    public void deleteTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("해당 태스크가 존재하지 않습니다."));
+        taskRepository.delete(task);
+    }
+    
+    @Transactional
+    public TaskDTO updateTask(Long taskId, TaskDTO taskDTO) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("해당 태스크가 존재하지 않습니다."));
+
+        if (taskDTO.getTitle() != null) {
+            task.setTitle(taskDTO.getTitle());
+        }
+
+        if (taskDTO.getDescription() != null) {
+            task.setDescription(taskDTO.getDescription());
+        }
+
+        if (taskDTO.getDueDate() != null) {
+            task.setDueDate(LocalDate.parse(taskDTO.getDueDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+
+        if (taskDTO.getStatus() != null) {
+            task.setStatus(taskDTO.getStatus());
+        }
+
+        Task updatedTask = taskRepository.save(task);
+        return entityToDTO(updatedTask);
+    }
 
     private Task dtoToEntity(TaskDTO taskDTO, Project project) {
         LocalDate dueDate = null;

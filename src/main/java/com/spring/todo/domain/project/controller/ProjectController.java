@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.todo.domain.project.dto.ProjectDTO;
+import com.spring.todo.domain.project.dto.SimpleProjectDTO;
 import com.spring.todo.domain.project.service.ProjectService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,16 @@ public class ProjectController {
 	
 	// select user에 관한 모든 프로젝트 출력
 	@GetMapping("/api/projects")
-    public ResponseEntity<List<ProjectDTO>> getProjectsByUserId() {
-        List<ProjectDTO> projects = projectService.getAllProjectsByUserId(1L);
+	public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserId() {
+        List<SimpleProjectDTO> projects = projectService.getAllProjectsByUserId(1L);
         return new ResponseEntity<>(projects, HttpStatus.OK);
+    }
+	
+	// 특정 프로젝트의 상세 정보와 연관된 Task 가져오기 (프로젝트 이름 클릭시 매핑)
+    @GetMapping("/api/projects/{projectId}")
+    public ResponseEntity<ProjectDTO> getProjectDetails(@PathVariable Long projectId) {
+        ProjectDTO projectDetails = projectService.getProjectDetails(projectId);
+        return new ResponseEntity<>(projectDetails, HttpStatus.OK);
     }
 
 	// Create
@@ -39,10 +47,10 @@ public class ProjectController {
 	}
 	
 	// Delete
-    @DeleteMapping("/api/projects/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+    @DeleteMapping("/api/projects/{projectid}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long projectid) {
         try {
-            projectService.deleteProject(id);
+            projectService.deleteProject(projectid);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -50,10 +58,10 @@ public class ProjectController {
     }
     
     // Update
-    @PutMapping("/api/projects/{id}")
-    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
+    @PutMapping("/api/projects/{projectid}")
+    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long projectid, @RequestBody ProjectDTO projectDTO) {
         try {
-            ProjectDTO updatedProject = projectService.updateProject(id, projectDTO);
+            ProjectDTO updatedProject = projectService.updateProject(projectid, projectDTO);
             return new ResponseEntity<>(updatedProject, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
