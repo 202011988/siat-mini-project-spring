@@ -12,12 +12,14 @@ import com.spring.todo.domain.project.repository.ProjectRepository;
 import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
 import com.spring.todo.domain.task.repository.TaskRepository;
+import com.spring.todo.global.utill.DateUtils;
+import com.spring.todo.global.utill.EntityDtoMapper;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service 
-public class TaskService {
+public class TaskService extends EntityDtoMapper<TaskDTO, Task, Project> {
 	private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     
@@ -71,11 +73,9 @@ public class TaskService {
         return entityToDTO(updatedTask);
     }
 
-    private Task dtoToEntity(TaskDTO taskDTO, Project project) {
-        LocalDate dueDate = null;
-        if (taskDTO.getDueDate() != null) {
-            dueDate = LocalDate.parse(taskDTO.getDueDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        }
+    @Override
+    public Task dtoToEntity(TaskDTO taskDTO, Project project) {
+        LocalDate dueDate = DateUtils.parseLocalDate(taskDTO.getDueDate());
 
         return Task.builder()
                 .title(taskDTO.getTitle())
@@ -86,18 +86,8 @@ public class TaskService {
                 .build();
     }
 
-    private TaskDTO entityToDTO(Task task) {
-        String dueDate = null;
-        if (task.getDueDate() != null) {
-            dueDate = task.getDueDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        }
-
-        return TaskDTO.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .description(task.getDescription())
-                .dueDate(dueDate)
-                .status(task.getStatus())
-                .build();
+    @Override
+    public TaskDTO entityToDTO(Task task) {
+        return EntityDtoMapper.entityToTaskDTO(task);
     }
 }

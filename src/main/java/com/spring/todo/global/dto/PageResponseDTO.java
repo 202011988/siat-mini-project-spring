@@ -8,13 +8,11 @@ import java.util.stream.IntStream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.spring.todo.domain.project.dto.ProjectDTO;
-
 import lombok.Data;
 
 @Data
-public class PageResponseDTO<DTO, Entity> {
-	private ProjectDTO project;
+public class PageResponseDTO<DTO, Entity, RelatedDTO> {
+	private RelatedDTO project;
 	private List<DTO> resultList;
 	private int totalPage;
 	private int page;
@@ -44,7 +42,7 @@ public class PageResponseDTO<DTO, Entity> {
 		this.pageList = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());
 	}
 
-	public void setProject(ProjectDTO project) {
-		this.project = project;
-	}
+	public void setProject(RelatedDTO project) {
+        this.project = project;
+    }
 }
