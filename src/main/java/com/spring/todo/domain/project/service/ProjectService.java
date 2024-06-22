@@ -1,8 +1,5 @@
 package com.spring.todo.domain.project.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -17,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spring.todo.domain.project.dto.ProjectDTO;
 import com.spring.todo.domain.project.dto.SimpleProjectDTO;
 import com.spring.todo.domain.project.entity.Project;
-import com.spring.todo.domain.project.repository.ProjectQueryDSLRepository;
 import com.spring.todo.domain.project.repository.ProjectRepository;
 import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
@@ -25,20 +21,16 @@ import com.spring.todo.domain.user.entity.User;
 import com.spring.todo.domain.user.repository.UserRepository;
 import com.spring.todo.global.dto.PageRequestDTO;
 import com.spring.todo.global.dto.PageResponseDTO;
+import com.spring.todo.global.utill.DateUtils;
+import com.spring.todo.global.utill.EntityDtoMapper;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class ProjectService {
+public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     private final ProjectRepository projectRepository;
-    private final ProjectQueryDSLRepository projectQueryDSLRepository;
     private final UserRepository userRepository;
-    
-    @PersistenceContext
-    private EntityManager entityManager;
     
     @Transactional(readOnly = true) 
     public List<SimpleProjectDTO> getAllProjectsByUserId(Long userId) {
@@ -54,7 +46,7 @@ public class ProjectService {
       
         Project project = dtoToEntity(projectDTO, user);
         Project savedProject = projectRepository.save(project);
-        return entityToDetailedDTO(savedProject);
+        return entityToDTO(savedProject);
     }
     
     @Transactional
@@ -69,31 +61,20 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
 
-        boolean isNameChanged = projectDTO.getName() != null && !projectDTO.getName().equals(project.getName());
-        boolean isDescriptionChanged = projectDTO.getDescription() != null && !projectDTO.getDescription().equals(project.getDescription());
-
-        long updateCount = 0;
-        if (isNameChanged || isDescriptionChanged) {
-            updateCount = projectQueryDSLRepository.updateProject(
-                    projectId,
-                    isNameChanged ? projectDTO.getName() : null,
-                    isDescriptionChanged ? projectDTO.getDescription() : null
-            );
-            if (updateCount > 0) {
-                projectRepository.flush();
-            }
-        } else {
-            throw new NoSuchElementException("업데이트할 값이 없습니다.");
+        if (projectDTO.getName() != null && !projectDTO.getName().equals(project.getName())) {
+            project.setName(projectDTO.getName());
         }
 
-        entityManager.clear();
+        if (projectDTO.getDescription() != null && !projectDTO.getDescription().equals(project.getDescription())) {
+            project.setDescription(projectDTO.getDescription());
+        }
 
-        return entityToDetailedDTO(projectRepository.findById(projectId)
-                .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다.")));
+        Project updatedProject = projectRepository.save(project);
+        return entityToDTO(updatedProject);
     }
     
     @Transactional(readOnly = true)
-    public PageResponseDTO<TaskDTO, Task> getProjectDetails(Long projectId, PageRequestDTO pageRequestDTO) {
+    public PageResponseDTO<TaskDTO, Task, ProjectDTO> getProjectDetails(Long projectId, PageRequestDTO pageRequestDTO) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
 
@@ -101,18 +82,10 @@ public class ProjectService {
         List<Task> tasks = project.getTasks();
         Page<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
 
-        PageResponseDTO<TaskDTO, Task> responseDTO = new PageResponseDTO<>(taskPage, this::entityToTaskDTO);
-        responseDTO.setProject(entityToDetailedDTO(project));
+        PageResponseDTO<TaskDTO, Task, ProjectDTO> responseDTO = new PageResponseDTO<>(taskPage, EntityDtoMapper::entityToTaskDTO);
+        responseDTO.setProject(entityToDTO(project));
 
         return responseDTO;
-    }
-    
-    private Project dtoToEntity(ProjectDTO projectDTO, User user) {
-        return Project.builder()
-                .name(projectDTO.getName())
-                .description(projectDTO.getDescription())
-                .user(user)
-                .build();
     }
     
     private SimpleProjectDTO entityToSimpleDTO(Project project) {
@@ -122,41 +95,24 @@ public class ProjectService {
                 .build();
     }
     
-    private ProjectDTO entityToDetailedDTO(Project project) {
-    	return ProjectDTO.builder()
+    @Override
+    public ProjectDTO entityToDTO(Project project) {
+        return ProjectDTO.builder()
                 .id(project.getId())
                 .name(project.getName())
                 .description(project.getDescription())
-                .createdAt(formatLocalDateTime(project.getCreatedAt()))
-                .updatedAt(formatLocalDateTime(project.getUpdatedAt()))
+                .createdAt(DateUtils.formatLocalDateTime(project.getCreatedAt()))
+                .updatedAt(DateUtils.formatLocalDateTime(project.getUpdatedAt()))
                 .build();
     }
     
-    private TaskDTO entityToTaskDTO(Task task) {
-    	String dueDate = formatDateTime(task.getDueDate());
-
-        return TaskDTO.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .description(task.getDescription())
-                .dueDate(dueDate)
-                .status(task.getStatus())
+    @Override
+    public Project dtoToEntity(ProjectDTO projectDTO, User user) {
+        return Project.builder()
+                .name(projectDTO.getName())
+                .description(projectDTO.getDescription())
+                .user(user)
                 .build();
     }
-    
-    private String formatLocalDateTime(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return null;
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return dateTime.format(formatter);
-    }
-    
-    private String formatDateTime(LocalDate date) {
-        if (date == null) {
-            return null;
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return date.format(formatter);
-    }
+                         
 }

@@ -2,6 +2,8 @@ package com.spring.todo.domain.project.entity;
 
 import java.util.List;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import com.spring.todo.domain.task.entity.Task;
 import com.spring.todo.domain.user.entity.User;
 import com.spring.todo.global.utill.BaseEntity;
@@ -25,6 +27,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "Projects")
+@DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

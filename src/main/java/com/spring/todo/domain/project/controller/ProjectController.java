@@ -37,8 +37,8 @@ public class ProjectController {
 	
 	// 특정 프로젝트의 상세 정보와 연관된 Task 가져오기 (프로젝트 이름 클릭시 매핑 및 Task 페이징 처리)
 	@GetMapping("/api/projects/{projectId}")
-    public ResponseEntity<PageResponseDTO<TaskDTO, Task>> getProjectDetails(@PathVariable Long projectId, PageRequestDTO pageRequestDTO) {
-        PageResponseDTO<TaskDTO, Task> projectDetails = projectService.getProjectDetails(projectId, pageRequestDTO);
+    public ResponseEntity<PageResponseDTO<TaskDTO, Task, ProjectDTO>> getProjectDetails(@PathVariable Long projectId, PageRequestDTO pageRequestDTO) {
+        PageResponseDTO<TaskDTO, Task, ProjectDTO> projectDetails = projectService.getProjectDetails(projectId, pageRequestDTO);
         return new ResponseEntity<>(projectDetails, HttpStatus.OK);
     }
 
