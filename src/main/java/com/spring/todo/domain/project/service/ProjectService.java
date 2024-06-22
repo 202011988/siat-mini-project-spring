@@ -1,7 +1,6 @@
 package com.spring.todo.domain.project.service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -14,10 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.spring.todo.domain.project.dto.ProjectDTO;
 import com.spring.todo.domain.project.dto.SimpleProjectDTO;
 import com.spring.todo.domain.project.entity.Project;
+import com.spring.todo.domain.project.exception.InvalidProjectDataException;
+import com.spring.todo.domain.project.exception.ProjectNotFoundException;
 import com.spring.todo.domain.project.repository.ProjectRepository;
 import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
 import com.spring.todo.domain.user.entity.User;
+import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.domain.user.repository.UserRepository;
 import com.spring.todo.global.dto.PageRequestDTO;
 import com.spring.todo.global.dto.PageResponseDTO;
@@ -25,7 +27,9 @@ import com.spring.todo.global.utill.DateUtils;
 import com.spring.todo.global.utill.EntityDtoMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
@@ -34,15 +38,20 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     
     @Transactional(readOnly = true) 
     public List<SimpleProjectDTO> getAllProjectsByUserId(Long userId) {
+    	log.info("User ID {}에 대한 모든 Project를 가져옵니다.", userId);
+    	
         return projectRepository.findByUserId(userId).stream()
                 .map(this::entityToSimpleDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public ProjectDTO createProject(ProjectDTO projectDTO, Long userId) {
+    public ProjectDTO createProject(ProjectDTO projectDTO, Long userId) throws InvalidProjectDataException, UserNotFoundException {
+    	log.info("새로운 Project를 생성합니다: {}", projectDTO);
+        validateProjectDTO(projectDTO);
+        
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundException("해당 User가 존재하지 않습니다."));
       
         Project project = dtoToEntity(projectDTO, user);
         Project savedProject = projectRepository.save(project);
@@ -50,16 +59,21 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     }
     
     @Transactional
-    public void deleteProject(Long projectId) {
+    public void deleteProject(Long projectId) throws ProjectNotFoundException {
+    	log.info("Project ID {}를 삭제합니다.", projectId);
+    	
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectNotFoundException("해당 Project가 존재하지 않습니다."));
         projectRepository.delete(project);
     }
     
     @Transactional
-    public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO) {
+    public ProjectDTO updateProject(Long projectId, ProjectDTO projectDTO) throws InvalidProjectDataException, ProjectNotFoundException {
+    	log.info("Project ID {}를 업데이트합니다: {}", projectId, projectDTO);
+    	validateProjectDTO(projectDTO);
+    	
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectNotFoundException("해당 Project가 존재하지 않습니다."));       
 
         if (projectDTO.getName() != null && !projectDTO.getName().equals(project.getName())) {
             project.setName(projectDTO.getName());
@@ -74,9 +88,11 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     }
     
     @Transactional(readOnly = true)
-    public PageResponseDTO<TaskDTO, Task, ProjectDTO> getProjectDetails(Long projectId, PageRequestDTO pageRequestDTO) {
+    public PageResponseDTO<TaskDTO, Task, ProjectDTO> getProjectDetails(Long projectId, PageRequestDTO pageRequestDTO) throws ProjectNotFoundException {
+    	log.info("Project ID {}에 대한 상세 정보와 Task를 가져옵니다.", projectId);
+    	
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new NoSuchElementException("해당 프로젝트가 존재하지 않습니다."));
+                .orElseThrow(() -> new ProjectNotFoundException("해당 Project가 존재하지 않습니다."));
 
         Pageable pageable = PageRequest.of(pageRequestDTO.getPage(), pageRequestDTO.getSize());
         List<Task> tasks = project.getTasks();
@@ -113,6 +129,17 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
                 .description(projectDTO.getDescription())
                 .user(user)
                 .build();
+    }
+    
+    private void validateProjectDTO(ProjectDTO projectDTO) {
+        if (projectDTO.getName() == null || projectDTO.getName().isEmpty()) {
+            log.error("프로젝트 이름이 유효하지 않습니다: {}", projectDTO.getName());
+            throw new InvalidProjectDataException("프로젝트 이름은 필수입니다.");
+        }
+        if (projectDTO.getDescription() == null || projectDTO.getDescription().isEmpty()) {
+            log.error("프로젝트 설명이 유효하지 않습니다: {}", projectDTO.getDescription());
+            throw new InvalidProjectDataException("프로젝트 설명은 필수입니다.");
+        }
     }
                          
 }
