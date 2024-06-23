@@ -21,7 +21,6 @@ import com.spring.todo.domain.user.service.UserService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -38,11 +37,9 @@ public class UserController {
     
     // 로그인
     @PostMapping("/api/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest, HttpSession session, HttpServletResponse response) {
+    public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         boolean isAuthenticated = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
         if (isAuthenticated) {
-            session.setAttribute("userEmail", loginRequest.getEmail());
-
             // 이메일 정보를 쿠키로 설정
             Cookie emailCookie = new Cookie("userEmail", loginRequest.getEmail());
             emailCookie.setHttpOnly(true);

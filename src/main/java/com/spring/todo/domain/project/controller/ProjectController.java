@@ -23,7 +23,8 @@ import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.global.dto.PageRequestDTO;
 import com.spring.todo.global.dto.PageResponseDTO;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -33,9 +34,8 @@ public class ProjectController {
 
 	// select user에 관한 모든 프로젝트 출력
     @GetMapping("/api/projects")
-    public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserEmail(HttpSession session) {
-        String userEmail = (String) session.getAttribute("userEmail");
-        System.out.println(userEmail);
+    public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserEmail(HttpServletRequest request) {
+        String userEmail = getUserEmailFromCookies(request);
         if (userEmail == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -52,9 +52,9 @@ public class ProjectController {
 	}
 
 	 // Create
-    @PostMapping("/api/projects")
-    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, HttpSession session) throws InvalidProjectDataException, UserNotFoundException {
-        String userEmail = (String) session.getAttribute("userEmail");
+	@PostMapping("/api/projects")
+    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, HttpServletRequest request) throws InvalidProjectDataException, UserNotFoundException {
+        String userEmail = getUserEmailFromCookies(request);
         if (userEmail == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -76,4 +76,16 @@ public class ProjectController {
 		ProjectDTO updatedProject = projectService.updateProject(projectid, projectDTO);
 		return new ResponseEntity<>(updatedProject, HttpStatus.OK);
 	}
+	
+	private String getUserEmailFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userEmail".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
 }

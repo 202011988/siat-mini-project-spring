@@ -43,8 +43,6 @@ public class UserService {
     // 로그인
     @Transactional(readOnly = true)
     public boolean login(String email, String password) {
-    	System.out.println("email :" + email);
-    	System.out.println("password : " + password);
         Optional<User> user = userRepository.findByEmailAndPassword(email, password);
         return user.isPresent();
     }
