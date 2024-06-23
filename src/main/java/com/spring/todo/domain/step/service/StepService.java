@@ -6,6 +6,7 @@ import com.spring.todo.domain.step.entity.Step;
 import com.spring.todo.domain.step.repository.StepRepository;
 import com.spring.todo.domain.task.entity.Task;
 import com.spring.todo.domain.task.exception.InvalidTaskDataException;
+import com.spring.todo.domain.task.exception.TaskNotFoundException;
 import com.spring.todo.domain.task.repository.TaskRepository;
 import com.spring.todo.global.utill.EntityDtoMapper;
 import jakarta.transaction.Transactional;
@@ -48,5 +49,13 @@ public class StepService {
             log.error("Step 설명이 유효하지 않습니다: {}", stepDTO.getDescription());
             throw new InvalidTaskDataException("Step 설명은 필수입니다.");
         }
+    }
+
+    public void deleteStep(Long stepId) {
+        log.info("Task ID {}를 삭제합니다.", stepId);
+
+        Step step = stepRepository.findById(stepId)
+                .orElseThrow(() -> new TaskNotFoundException("해당 Step가 존재하지 않습니다."));
+        stepRepository.delete(step);
     }
 }

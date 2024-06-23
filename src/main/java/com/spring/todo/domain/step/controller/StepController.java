@@ -29,7 +29,8 @@ public class StepController {
     // delete
     @DeleteMapping("/{stepId}")
     public ResponseEntity<Void> deleteStep(@PathVariable Long stepId) {
-        return null;
+        stepService.deleteStep(stepId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }
