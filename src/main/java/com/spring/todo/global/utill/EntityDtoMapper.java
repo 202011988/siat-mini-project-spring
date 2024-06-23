@@ -1,5 +1,7 @@
 package com.spring.todo.global.utill;
 
+import com.spring.todo.domain.step.dto.StepDTO;
+import com.spring.todo.domain.step.entity.Step;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,6 +9,10 @@ import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
 
 public abstract class EntityDtoMapper<DTO, Entity, RelatedEntity> {
+
+    public static StepDTO entityToStepDTO(Step step) {
+        return StepDTO.builder().id(step.getId()).title(step.getTitle()).description(step.getDescription()).build();
+    }
 
     public abstract DTO entityToDTO(Entity entity);
     public abstract Entity dtoToEntity(DTO dto, RelatedEntity relatedEntity);

@@ -1,8 +1,6 @@
 package com.spring.todo.domain.step.entity;
 
-import com.spring.todo.domain.task.entity.Status;
 import com.spring.todo.domain.task.entity.Task;
-import com.spring.todo.global.converter.StatusConverter;
 import com.spring.todo.global.utill.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,10 +24,9 @@ public class Step extends BaseEntity {
     @JoinColumn(nullable = false)
     private Task task;
 
+    @Column(nullable = false, length = 25)
+    private String title;
+
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Convert(converter = StatusConverter.class)
-    @Column(nullable = false)
-    private Status status = Status.PENDING;
 }
