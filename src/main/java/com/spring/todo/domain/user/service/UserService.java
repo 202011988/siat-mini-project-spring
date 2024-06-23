@@ -54,8 +54,6 @@ public class UserService {
 
             User loggedInUser = user.get();    
             
-            System.out.println(loggedInUser.getEmail());
-            System.out.println(loggedInUser.getNickname());
             return LoginResponse.builder()
             					.email(loggedInUser.getEmail())
             					.nickname(loggedInUser.getNickname())
