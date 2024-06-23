@@ -10,6 +10,7 @@ import com.spring.todo.domain.task.exception.TaskNotFoundException;
 import com.spring.todo.domain.task.repository.TaskRepository;
 import com.spring.todo.global.utill.EntityDtoMapper;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -52,10 +53,16 @@ public class StepService {
     }
 
     public void deleteStep(Long stepId) {
-        log.info("Task ID {}를 삭제합니다.", stepId);
+        log.info("Step ID {}를 삭제합니다.", stepId);
 
         Step step = stepRepository.findById(stepId)
                 .orElseThrow(() -> new TaskNotFoundException("해당 Step가 존재하지 않습니다."));
         stepRepository.delete(step);
+    }
+
+    public List<StepDTO> getSteps(Long taskId) {
+        log.info("Step 관련 정보를 {}으로 Step들을 가져옵니다.", taskId);
+
+        return stepRepository.findAllByTask_Id(taskId).stream().map(this::entityToDto).toList();
     }
 }
