@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.spring.todo.domain.user.dto.LoginResponse;
 import com.spring.todo.domain.user.dto.UserDTO;
 import com.spring.todo.domain.user.entity.User;
 import com.spring.todo.domain.user.exception.DuplicateUserEmailException;
@@ -39,15 +40,29 @@ public class UserService {
     
     // 로그인
     @Transactional(readOnly = true)
-    public boolean login(String email, String password) throws InvalidCredentialsException {
+    public LoginResponse login(String email, String password, HttpServletResponse response) throws InvalidCredentialsException {
         Optional<User> user = userRepository.findByEmailAndPassword(email, password);
 
-        if(user.isPresent()) {
-        	log.info("로그인 성공: {}", email);
-        	return true;
+        if (user.isPresent()) {
+            log.info("로그인 성공: {}", email);
+            // 이메일 정보를 쿠키로 설정
+            Cookie emailCookie = new Cookie("userEmail", email);
+            emailCookie.setHttpOnly(true);
+            emailCookie.setPath("/");
+            emailCookie.setMaxAge(30 * 60); // 30 minutes
+            response.addCookie(emailCookie);
+
+            User loggedInUser = user.get();    
+            
+            System.out.println(loggedInUser.getEmail());
+            System.out.println(loggedInUser.getNickname());
+            return LoginResponse.builder()
+            					.email(loggedInUser.getEmail())
+            					.nickname(loggedInUser.getNickname())
+            					.build();
         } else {
-        	log.error("InvalidCredentialsException: 아이디 및 비밀번호가 일치하지 않습니다: {}", email);
-        	throw new InvalidCredentialsException("아이디 및 비밀번호가 일치하지 않습니다.");
+            log.error("InvalidCredentialsException: 아이디 및 비밀번호가 일치하지 않습니다: {}", email);
+            throw new InvalidCredentialsException("아이디 및 비밀번호가 일치하지 않습니다.");
         }
     }
     

@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.todo.domain.user.dto.LoginRequest;
+import com.spring.todo.domain.user.dto.LoginResponse;
 import com.spring.todo.domain.user.dto.UserDTO;
 import com.spring.todo.domain.user.exception.DuplicateUserEmailException;
 import com.spring.todo.domain.user.exception.InvalidCredentialsException;
 import com.spring.todo.domain.user.service.UserService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,20 +31,9 @@ public class UserController {
     
     // 로그인
     @PostMapping("/api/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) throws InvalidCredentialsException {
-        boolean isAuthenticated = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        
-        if (isAuthenticated) {
-            // 이메일 정보를 쿠키로 설정
-            Cookie emailCookie = new Cookie("userEmail", loginRequest.getEmail());
-            emailCookie.setHttpOnly(true);
-            emailCookie.setPath("/");
-            emailCookie.setMaxAge(30 * 60); // 30 minutes
-
-            response.addCookie(emailCookie);          
-        } 
-       
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) throws InvalidCredentialsException {
+        LoginResponse loginResponse = userService.login(loginRequest.getEmail(), loginRequest.getPassword(), response);
+        return new ResponseEntity<>(loginResponse, HttpStatus.OK);
     }
     
     // 로그아웃    
