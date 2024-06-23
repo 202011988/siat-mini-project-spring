@@ -5,12 +5,12 @@ import java.time.LocalDate;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.spring.todo.domain.project.entity.Project;
+import com.spring.todo.global.converter.StatusConverter;
 import com.spring.todo.global.utill.BaseEntity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -50,7 +50,7 @@ public class Task extends BaseEntity {
     @Column
     private LocalDate dueDate;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = StatusConverter.class)
     @Column(nullable = false)
     private Status status;
     
