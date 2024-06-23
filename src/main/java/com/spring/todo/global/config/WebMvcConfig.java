@@ -18,6 +18,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/users", "/api/login"); // 회원가입과 로그인 요청은 인터셉터가 실행되지 않도록 적용
+                .excludePathPatterns("/api/users", "/api/login"); // 회원가입, 로그인 요청은 인터셉터가 실행되지 않도록 적용
     }
 }

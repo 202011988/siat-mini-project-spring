@@ -11,6 +11,9 @@ import com.spring.todo.domain.user.exception.DuplicateUserEmailException;
 import com.spring.todo.domain.user.exception.InvalidCredentialsException;
 import com.spring.todo.domain.user.repository.UserRepository;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,6 +48,24 @@ public class UserService {
         } else {
         	log.error("InvalidCredentialsException: 아이디 및 비밀번호가 일치하지 않습니다: {}", email);
         	throw new InvalidCredentialsException("아이디 및 비밀번호가 일치하지 않습니다.");
+        }
+    }
+    
+    // 로그아웃
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userEmail".equals(cookie.getName())) {
+                    log.info("로그아웃 처리 진행 중: key={}, value={}", cookie.getName(), cookie.getValue());
+                    cookie.setMaxAge(0);
+                    cookie.setValue("");
+                    cookie.setPath("/");
+                    response.addCookie(cookie);
+                    log.info("로그아웃 처리 완료: key={}, value={}", cookie.getName(), cookie.getValue());
+                    break;
+                }
+            }
         }
     }
 

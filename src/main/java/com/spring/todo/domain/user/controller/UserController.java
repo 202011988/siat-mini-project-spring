@@ -13,6 +13,7 @@ import com.spring.todo.domain.user.exception.InvalidCredentialsException;
 import com.spring.todo.domain.user.service.UserService;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,13 @@ public class UserController {
             response.addCookie(emailCookie);          
         } 
        
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    // 로그아웃    
+    @PostMapping("/api/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        userService.logout(request, response);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
