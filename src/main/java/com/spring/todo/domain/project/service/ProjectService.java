@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import com.spring.todo.domain.project.exception.ProjectNotFoundException;
 import com.spring.todo.domain.project.repository.ProjectRepository;
 import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
+import com.spring.todo.domain.task.repository.TaskRepository;
 import com.spring.todo.domain.user.entity.User;
 import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.domain.user.repository.UserRepository;
@@ -35,22 +35,26 @@ import lombok.extern.slf4j.Slf4j;
 public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final TaskRepository taskRepository;
     
     @Transactional(readOnly = true) 
-    public List<SimpleProjectDTO> getAllProjectsByUserId(Long userId) {
-    	log.info("User ID {}에 대한 모든 Project를 가져옵니다.", userId);
-    	
-        return projectRepository.findByUserId(userId).stream()
+    public List<SimpleProjectDTO> getAllProjectsByUserEmail(String userEmail) {
+        log.info("User Email {}에 대한 모든 Project를 가져옵니다.", userEmail);
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("해당 User가 존재하지 않습니다."));
+        
+        return projectRepository.findByUserId(user.getId()).stream()
                 .map(this::entityToSimpleDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public ProjectDTO createProject(ProjectDTO projectDTO, Long userId) throws InvalidProjectDataException, UserNotFoundException {
-    	log.info("새로운 Project를 생성합니다: {}", projectDTO);
+    public ProjectDTO createProject(ProjectDTO projectDTO, String userEmail) throws InvalidProjectDataException, UserNotFoundException {
+        log.info("새로운 Project를 생성합니다: {}", projectDTO);
         validateProjectDTO(projectDTO);
-        
-        User user = userRepository.findById(userId)
+
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("해당 User가 존재하지 않습니다."));
       
         Project project = dtoToEntity(projectDTO, user);
@@ -95,8 +99,7 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
                 .orElseThrow(() -> new ProjectNotFoundException("해당 Project가 존재하지 않습니다."));
 
         Pageable pageable = PageRequest.of(pageRequestDTO.getPage(), pageRequestDTO.getSize());
-        List<Task> tasks = project.getTasks();
-        Page<Task> taskPage = new PageImpl<>(tasks, pageable, tasks.size());
+        Page<Task> taskPage = taskRepository.findByProjectId(project.getId(), pageable);
 
         PageResponseDTO<TaskDTO, Task, ProjectDTO> responseDTO = new PageResponseDTO<>(taskPage, EntityDtoMapper::entityToTaskDTO);
         responseDTO.setProject(entityToDTO(project));

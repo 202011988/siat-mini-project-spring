@@ -23,6 +23,7 @@ import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.global.dto.PageRequestDTO;
 import com.spring.todo.global.dto.PageResponseDTO;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -31,12 +32,18 @@ public class ProjectController {
 	private final ProjectService projectService;
 
 	// select user에 관한 모든 프로젝트 출력
-	@GetMapping("/api/projects")
-	public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserId() {
-		List<SimpleProjectDTO> projects = projectService.getAllProjectsByUserId(1L);
-		return new ResponseEntity<>(projects, HttpStatus.OK);
-	}
+    @GetMapping("/api/projects")
+    public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserEmail(HttpSession session) {
+        String userEmail = (String) session.getAttribute("userEmail");
+        System.out.println(userEmail);
+        if (userEmail == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
+        List<SimpleProjectDTO> projects = projectService.getAllProjectsByUserEmail(userEmail);
+        return new ResponseEntity<>(projects, HttpStatus.OK);
+    }
+	
 	// 특정 프로젝트의 상세 정보와 연관된 Task 가져오기 (프로젝트 이름 클릭시 매핑 및 Task 페이징 처리)
 	@GetMapping("/api/projects/{projectId}")
 	public ResponseEntity<PageResponseDTO<TaskDTO, Task, ProjectDTO>> getProjectDetails(@PathVariable Long projectId, PageRequestDTO pageRequestDTO) throws ProjectNotFoundException {
@@ -44,13 +51,17 @@ public class ProjectController {
 		return new ResponseEntity<>(projectDetails, HttpStatus.OK);
 	}
 
-	// Create
-	@PostMapping("/api/projects")
-	public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO) throws InvalidProjectDataException, UserNotFoundException {
-		// userId는 아직 세션처리를 안했기 때문에 일단 테스트용으로 둠..
-		ProjectDTO project = projectService.createProject(projectDTO, 1L);
-		return new ResponseEntity<>(project, HttpStatus.CREATED);
-	}
+	 // Create
+    @PostMapping("/api/projects")
+    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, HttpSession session) throws InvalidProjectDataException, UserNotFoundException {
+        String userEmail = (String) session.getAttribute("userEmail");
+        if (userEmail == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        ProjectDTO project = projectService.createProject(projectDTO, userEmail);
+        return new ResponseEntity<>(project, HttpStatus.CREATED);
+    }
 
 	// Delete
 	@DeleteMapping("/api/projects/{projectid}")

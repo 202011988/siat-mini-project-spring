@@ -1,18 +1,22 @@
 package com.spring.todo.domain.user.service;
 
-import com.spring.todo.domain.user.dto.UserDTO;
-import com.spring.todo.domain.user.entity.User;
-import com.spring.todo.domain.user.repository.UserQueryDSLRepository;
-import com.spring.todo.domain.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import com.spring.todo.domain.user.dto.UserDTO;
+import com.spring.todo.domain.user.entity.User;
+import com.spring.todo.domain.user.exception.DuplicateUserEmailException;
+import com.spring.todo.domain.user.repository.UserQueryDSLRepository;
+import com.spring.todo.domain.user.repository.UserRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +27,27 @@ public class UserService {
 
     @PersistenceContext
     private EntityManager entityManager;
+    
+    @Transactional
+    public UserDTO createUser(UserDTO userDTO) throws DuplicateUserEmailException {
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new DuplicateUserEmailException("이미 존재하는 이메일입니다: " + userDTO.getEmail());
+        }
+
+        User user = dtoToEntity(userDTO);
+
+        User savedUser = userRepository.save(user);
+        return entityToDTO(savedUser);
+    }
+    
+    // 로그인
+    @Transactional(readOnly = true)
+    public boolean login(String email, String password) {
+    	System.out.println("email :" + email);
+    	System.out.println("password : " + password);
+        Optional<User> user = userRepository.findByEmailAndPassword(email, password);
+        return user.isPresent();
+    }
 
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
@@ -36,13 +61,6 @@ public class UserService {
         User user =  userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
         return entityToDTO(user);
-    }
-
-    @Transactional
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = dtoToEntity(userDTO);
-        User savedUser = userRepository.save(user);
-        return entityToDTO(savedUser);
     }
 
     @Transactional
@@ -85,7 +103,6 @@ public class UserService {
 
     private User dtoToEntity(UserDTO userDTO) {
         return User.builder()
-                .id(userDTO.getId())
                 .email(userDTO.getEmail())
                 .password(userDTO.getPassword())
                 .nickname(userDTO.getNickname())
