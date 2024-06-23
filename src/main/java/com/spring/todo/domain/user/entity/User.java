@@ -24,6 +24,4 @@ public class User {
 
     @Column(nullable = false)
     private String nickname;
-
-    // Getters and Setters
 }
