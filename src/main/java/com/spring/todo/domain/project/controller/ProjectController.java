@@ -19,6 +19,7 @@ import com.spring.todo.domain.project.exception.ProjectNotFoundException;
 import com.spring.todo.domain.project.service.ProjectService;
 import com.spring.todo.domain.task.dto.TaskDTO;
 import com.spring.todo.domain.task.entity.Task;
+import com.spring.todo.domain.user.exception.CookieUserEmailNotFoundException;
 import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.global.dto.PageRequestDTO;
 import com.spring.todo.global.dto.PageResponseDTO;
@@ -34,11 +35,8 @@ public class ProjectController {
 
 	// select user에 관한 모든 프로젝트 출력
     @GetMapping("/api/projects")
-    public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserEmail(HttpServletRequest request) {
-        String userEmail = getUserEmailFromCookies(request);
-        if (userEmail == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<List<SimpleProjectDTO>> getProjectsByUserEmail(HttpServletRequest request) throws CookieUserEmailNotFoundException {
+        String userEmail = getUserEmailFromCookies(request);     
 
         List<SimpleProjectDTO> projects = projectService.getAllProjectsByUserEmail(userEmail);
         return new ResponseEntity<>(projects, HttpStatus.OK);
@@ -51,13 +49,10 @@ public class ProjectController {
 		return new ResponseEntity<>(projectDetails, HttpStatus.OK);
 	}
 
-	 // Create
+	// Create
 	@PostMapping("/api/projects")
-    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, HttpServletRequest request) throws InvalidProjectDataException, UserNotFoundException {
+    public ResponseEntity<ProjectDTO> createProject(@RequestBody ProjectDTO projectDTO, HttpServletRequest request) throws CookieUserEmailNotFoundException, InvalidProjectDataException, UserNotFoundException {
         String userEmail = getUserEmailFromCookies(request);
-        if (userEmail == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
 
         ProjectDTO project = projectService.createProject(projectDTO, userEmail);
         return new ResponseEntity<>(project, HttpStatus.CREATED);
@@ -86,6 +81,6 @@ public class ProjectController {
                 }
             }
         }
-        return null;
+        throw new CookieUserEmailNotFoundException("쿠키에서 사용자 이메일이 존재하지 않습니다.");
     }
 }

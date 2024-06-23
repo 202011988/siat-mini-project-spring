@@ -38,7 +38,7 @@ public class ProjectService extends EntityDtoMapper<ProjectDTO, Project, User> {
     private final TaskRepository taskRepository;
     
     @Transactional(readOnly = true) 
-    public List<SimpleProjectDTO> getAllProjectsByUserEmail(String userEmail) {
+    public List<SimpleProjectDTO> getAllProjectsByUserEmail(String userEmail) throws UserNotFoundException {
         log.info("User Email {}에 대한 모든 Project를 가져옵니다.", userEmail);
 
         User user = userRepository.findByEmail(userEmail)

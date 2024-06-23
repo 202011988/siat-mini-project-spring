@@ -1,21 +1,23 @@
 package com.spring.todo.global.config;
 
 import com.spring.todo.global.interceptor.LoginInterceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@RequiredArgsConstructor
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private LoginInterceptor loginInterceptor;
+	private final LoginInterceptor loginInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/login", "/api/users");
+                .excludePathPatterns("/api/users", "/api/login"); // 회원가입과 로그인 요청은 인터셉터가 실행되지 않도록 적용
     }
 }

@@ -8,6 +8,9 @@ import com.spring.todo.domain.project.exception.InvalidProjectDataException;
 import com.spring.todo.domain.project.exception.ProjectNotFoundException;
 import com.spring.todo.domain.task.exception.InvalidTaskDataException;
 import com.spring.todo.domain.task.exception.TaskNotFoundException;
+import com.spring.todo.domain.user.exception.CookieUserEmailNotFoundException;
+import com.spring.todo.domain.user.exception.DuplicateUserEmailException;
+import com.spring.todo.domain.user.exception.InvalidCredentialsException;
 import com.spring.todo.domain.user.exception.UserNotFoundException;
 import com.spring.todo.global.response.ErrorCode;
 import com.spring.todo.global.response.ErrorResponse;
@@ -51,6 +54,27 @@ public class GlobalExceptionHandler {
         log.error("Invalid_TaskData_Exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INVALID_TASK_DATA, ex.getMessage());
         return ResponseEntity.status(ErrorCode.INVALID_TASK_DATA.getStatusCode()).body(errorResponse);
+    }
+    
+    @ExceptionHandler(DuplicateUserEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUserEmailException(DuplicateUserEmailException ex) {
+        log.error("Duplicate_User_Email_Exception: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(ErrorCode.DUPLICATE_USER_EMAIL, ex.getMessage());
+        return ResponseEntity.status(ErrorCode.DUPLICATE_USER_EMAIL.getStatusCode()).body(errorResponse);
+    }
+    
+    @ExceptionHandler(CookieUserEmailNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCookieUserEmailNotFoundException(CookieUserEmailNotFoundException ex) {
+        log.error("Cookie_User_Email_Not_Found_Exception: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(ErrorCode.COOKIE_USER_EMAIL_NOT_FOUND, ex.getMessage());
+        return ResponseEntity.status(ErrorCode.COOKIE_USER_EMAIL_NOT_FOUND.getStatusCode()).body(errorResponse);
+    }
+    
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        log.error("Invalid_Credentials_Exception: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(ErrorCode.INVALID_CREDENTIALS, ex.getMessage());
+        return ResponseEntity.status(ErrorCode.INVALID_CREDENTIALS.getStatusCode()).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
